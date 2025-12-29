@@ -19,6 +19,21 @@
           <!-- Activities will be loaded here -->
           <p>Loading activities...</p>
         </div>
+
+        <!-- Template for an activity card (JS can clone this and fill fields) -->
+        <template id="activity-template">
+          <article class="activity-card">
+            <h4 class="activity-title"><!-- title --></h4>
+            <p class="activity-desc"><!-- description --></p>
+            <p class="activity-schedule"><strong>Schedule:</strong> <!-- schedule --></p>
+            <div class="participants">
+              <h5>Participants</h5>
+              <ul class="participants-list">
+                <!-- JS should render <li>participant@example.edu</li> items here -->
+              </ul>
+            </div>
+          </article>
+        </template>
       </section>
 
       <section id="signup-container">
