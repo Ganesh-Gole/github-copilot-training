@@ -29,23 +29,17 @@ document.addEventListener("DOMContentLoaded", () => {
           <ul class="participants-list"></ul>
         `;
 
+        const participantsUl = activityCard.querySelector(".participants-list");
+
         // Add participants if available
         if (details.participants && details.participants.length) {
           details.participants.forEach(email => {
-            const li = document.createElement("li");
-            const avatar = document.createElement("span");
-            avatar.className = "participant-avatar";
-            avatar.textContent = initials(email);
-            li.appendChild(avatar);
-            const txt = document.createElement("span");
-            txt.textContent = email;
-            li.appendChild(txt);
-            activityCard.querySelector(".participants-list").appendChild(li);
+            participantsUl.appendChild(createParticipantLi(email, name));
           });
         } else {
           const li = document.createElement("li");
           li.textContent = "No participants yet";
-          activityCard.querySelector(".participants-list").appendChild(li);
+          participantsUl.appendChild(li);
         }
 
         activitiesList.appendChild(activityCard);
@@ -60,6 +54,49 @@ document.addEventListener("DOMContentLoaded", () => {
       activitiesList.innerHTML = "<p>Failed to load activities. Please try again later.</p>";
       console.error("Error fetching activities:", error);
     }
+  }
+
+  // Helper to create participant <li> with avatar, email text and delete button
+  function createParticipantLi(email, activityName) {
+    const li = document.createElement("li");
+    const avatar = document.createElement("span");
+    avatar.className = "participant-avatar";
+    avatar.textContent = initials(email);
+    li.appendChild(avatar);
+    const txt = document.createElement("span");
+    txt.textContent = email;
+    li.appendChild(txt);
+
+    const del = document.createElement("button");
+    del.className = "participant-delete";
+    del.title = "Unregister";
+    del.textContent = "✖";
+    del.addEventListener("click", async (e) => {
+      e.preventDefault();
+      try {
+        const res = await fetch(`/activities/${encodeURIComponent(activityName)}/unregister?email=${encodeURIComponent(email)}`, { method: "POST" });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ detail: "Unregister failed" }));
+          throw new Error(err.detail || "Unregister failed");
+        }
+        const json = await res.json();
+        // Remove the li from the UI
+        const ul = li.parentElement;
+        ul.removeChild(li);
+        // If no participants remain, show placeholder
+        if (!ul.children.length) {
+          const placeholder = document.createElement("li");
+          placeholder.textContent = "No participants yet";
+          ul.appendChild(placeholder);
+        }
+        showMessage(json.message, "success");
+      } catch (err) {
+        showMessage(err.message, "error");
+      }
+    });
+
+    li.appendChild(del);
+    return li;
   }
 
   function initials(email) {
